@@ -123,6 +123,9 @@ class AzureBlobFileSystem(AsyncFileSystem):
         signed with an account key and to construct the storage endpoint. It
         is required unless a connection string is given, or if a custom
         domain is used with anonymous authentication.
+    account_host: str
+        The storage account host. This is used to construct the storage endpoint.
+        It is required if a custom domain is used for storage account.
     account_key: str
         The storage account key. This is used for shared key authentication.
         If any of account key, sas token or client_id is specified, anonymous access
@@ -204,6 +207,7 @@ class AzureBlobFileSystem(AsyncFileSystem):
     def __init__(
         self,
         account_name: str = None,
+        account_host: str = None,
         account_key: str = None,
         connection_string: str = None,
         credential: str = None,
@@ -233,6 +237,7 @@ class AzureBlobFileSystem(AsyncFileSystem):
         )
 
         self.account_name = account_name or os.getenv("AZURE_STORAGE_ACCOUNT_NAME")
+        self.account_host = account_host or os.getenv("AZURE_STORAGE_ACCOUNT_HOST")
         self.account_key = account_key or os.getenv("AZURE_STORAGE_ACCOUNT_KEY")
         self.connection_string = connection_string or os.getenv(
             "AZURE_STORAGE_CONNECTION_STRING"
@@ -413,7 +418,7 @@ class AzureBlobFileSystem(AsyncFileSystem):
                     conn_str=self.connection_string
                 )
             elif self.account_name is not None:
-                if hasattr(self, "account_host"):
+                if self.account_host is not None:
                     self.account_url: str = f"https://{self.account_host}"
                 else:
                     self.account_url: str = (
@@ -1916,7 +1921,7 @@ class AzureBlobFile(AbstractBufferedFile):
         ValueError if none of the connection details are available
         """
         try:
-            if hasattr(self.fs, "account_host"):
+            if hasattr(self.fs, "account_host") and self.fs.account_host is not None:
                 self.fs.account_url: str = f"https://{self.fs.account_host}"
             else:
                 self.fs.account_url: str = (

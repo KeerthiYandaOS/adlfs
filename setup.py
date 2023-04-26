@@ -43,7 +43,8 @@ setup(
     zip_safe=False,
     entry_points={
         "fsspec.specs": [
-            "abfss=adlfs.AzureBlobFileSystem",
+            'abfs=fsspec_wrapper.AzureBlobFileSystem',
+            'abfss=fsspec_wrapper.AzureBlobFileSystem',
         ],
     },
 )
